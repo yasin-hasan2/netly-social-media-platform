@@ -68,26 +68,37 @@ export const addNewPost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
   try {
-    const post = await Post.find()
-      .sort({ createdAt: -1 }) // Sort posts by creation date in descending order
-      .populate({ path: "author", select: "username profilePicture" }) // Populate the author field with username and profile picture
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: "author", select: "username profilePicture" })
       .populate({
         path: "comments",
         populate: { path: "author", select: "username profilePicture" },
-        sort: { createdAt: -1 }, // Sort comments by creation date in descending order
-      }); // Populate comments with author details
+        options: { sort: { createdAt: -1 } },
+      });
+
+    const totalPosts = await Post.countDocuments();
 
     return res.status(200).json({
       message: "Posts fetched successfully",
       success: true,
-      posts: post, // Return the fetched posts
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+      totalPosts,
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       message: "Internal server error",
       success: false,
     });
-    console.log(error);
   }
 };
 

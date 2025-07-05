@@ -4,49 +4,55 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const SuggestedUsers = () => {
   const { suggestedUsers } = useSelector((store) => store.auth);
-  //   console.log(suggestedUsers);
+
   return (
-    <div className="my-10">
-      <div className="flex items-center justify-between gap-6">
-        <h1 className="font-semibold text-gray-600">Suggested for you</h1>
-        <span className="font-medium cursor-pointer">See All</span>
+    <div className="mt-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold text-gray-400">
+          Suggested for you
+        </h2>
+        <span className="text-xs text-[#FBCF28] hover:underline cursor-pointer font-medium">
+          See All
+        </span>
       </div>
-      {suggestedUsers?.map((user) => {
-        return (
-          <div
-            key={user._id}
-            className="flex items-center justify-between my-5"
-          >
-            <div className="flex items-center gap-2">
+
+      {/* List */}
+      <div className="space-y-4">
+        {suggestedUsers?.map((user) => (
+          <div key={user._id} className="flex items-center justify-between">
+            {/* Left: Avatar + Info */}
+            <div className="flex items-center gap-3">
               <Link to={`/profile/${user?._id}`}>
-                <Avatar>
+                <Avatar className="w-9 h-9 border border-gray-700">
                   <AvatarImage
                     src={user?.profilePicture}
-                    alt="post_image"
-                  ></AvatarImage>
+                    alt={user?.username}
+                  />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
               </Link>
 
-              <div className="">
-                <h1 className="font-semibold text-sm">
-                  {" "}
-                  <Link to={`/profile/${user?._id}`}>
-                    {user?.username}
-                  </Link>{" "}
-                </h1>
-                <span className="text-gray-600 text-sm">
-                  {" "}
-                  {user?.bio || "Bio here ..."}{" "}
-                </span>
+              <div>
+                <Link
+                  to={`/profile/${user?._id}`}
+                  className="text-sm font-semibold text-white hover:underline"
+                >
+                  {user?.username}
+                </Link>
+                <p className="text-xs text-gray-500 truncate w-[160px]">
+                  {user?.bio || "No bio available"}
+                </p>
               </div>
             </div>
-            <span className="text-[#FBCF28] text-xs font-bold cursor-pointer hover:text-[#c5af63]">
+
+            {/* Follow Button */}
+            <button className="text-xs font-bold text-[#FBCF28] hover:text-[#c5af63] transition">
               Follow
-            </span>
+            </button>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };

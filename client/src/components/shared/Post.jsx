@@ -4,7 +4,6 @@ import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
-// import { Input } from "../ui/input";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -14,30 +13,20 @@ import { Badge } from "../ui/badge";
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
-  // console.log(text);
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
-  // console.log(posts);
   const [liked, setLiked] = useState(post.likes?.includes(user?._id) || false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
-  // console.log("comment:", comment);
-
   const dispatch = useDispatch();
-  // const [deleteOpen, setDeleteOpen] = useState(false);
+
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
-    // Limit the input text to 100 characters
-    if (inputText.trim()) {
-      setText(inputText);
-    } else {
-      setText("");
-    }
+    setText(inputText.trim() ? inputText : "");
   };
 
-  // Function to handle the like button click
   const likeOrDislikeHandler = async () => {
     try {
       const action = liked ? "dislike" : "like";
@@ -47,13 +36,10 @@ const Post = ({ post }) => {
           withCredentials: true,
         }
       );
-      console.log(res.data);
-      if (res.data.success) {
-        const updatedLikes = liked ? postLike - 1 : postLike + 1;
-        setPostLike(updatedLikes);
-        setLiked(!liked);
 
-        // Update the posts in the Redux store
+      if (res.data.success) {
+        setPostLike(liked ? postLike - 1 : postLike + 1);
+        setLiked(!liked);
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -68,53 +54,35 @@ const Post = ({ post }) => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error("Error liking or disliking post:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while liking or disliking the post."
-      );
+      toast.error(error.response?.data?.message || "Like/Dislike failed.");
     }
   };
 
-  // Function to handle the comment button click
   const commentHandler = async () => {
     try {
       const res = await axios.post(
         `http://localhost:5000/api/v1/post/${post._id}/comment`,
         { text },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
 
-      // console.log(res.data);
       if (res.data.success) {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
         const updatedPostData = posts.map((p) =>
           p._id === post._id ? { ...p, comments: updatedCommentData } : p
         );
-
         dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
-        setText(""); // Clear the input field after posting the comment
-        // Optionally, you can update the comments in the post state or Redux store
-        // For example, you might want to fetch the updated post data or update it directly
+        setText("");
       }
     } catch (error) {
-      console.error("Error handling comment:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while handling the comment."
-      );
+      toast.error(error.response?.data?.message || "Comment failed.");
     }
   };
-  // console.log("comment:", commentHandler);
-
-  // delete post handler
 
   const deletePostHandler = async () => {
     try {
@@ -125,23 +93,13 @@ const Post = ({ post }) => {
         }
       );
       if (res.data.success) {
-        const updatedPosts = posts.filter(
-          (postItem) => postItem._id !== post?._id
-        ); // Assuming the response contains the updated posts
+        const updatedPosts = posts.filter((p) => p._id !== post._id);
         dispatch(setPosts(updatedPosts));
-        toast.success(res.data.message);
         setOpen(false);
-        console.log("Post deleted successfully:", res.data.post);
-        // Optionally, you can refresh the posts or update the UI
-        // For example, you might want to remove the post from the state
-        // dispatch(removePost(post._id)); // Assuming you have a removePost action
+        toast.success(res.data.message);
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while deleting the post."
-      );
+      toast.error(error.response?.data?.message || "Delete failed.");
     }
   };
 
@@ -153,17 +111,12 @@ const Post = ({ post }) => {
           withCredentials: true,
         }
       );
-
-      console.log(res.data);
-      if (res.data.success) {
-        toast.success(res.data.message);
-      }
+      if (res.data.success) toast.success(res.data.message);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // Caption logic
   const captionWords = post.caption ? post.caption.split(/\s+/) : [];
   const isLongCaption = captionWords.length > 20;
   const displayedCaption =
@@ -172,157 +125,163 @@ const Post = ({ post }) => {
       : post.caption;
 
   return (
-    <div className="my-8 w-full max-w-sm  mx-auto border-b border-gray-600">
-      <div className="flex items-center justify-between ">
-        <div className="flex items-center gap-2">
+    <div className="bg-transparent transition-all duration-300 hover:bg-[#1A1A1A]/80 border border-gray-700 rounded-xl p-4 mb-6 shadow-md w-full max-w-lg mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <Avatar>
-            <AvatarImage
-              src={post.author?.profilePicture}
-              alt="post_image"
-            ></AvatarImage>
+            <AvatarImage src={post.author?.profilePicture} alt="user" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <div className="flex items-center gap-3">
-            <h1>{post.author?.username}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-semibold text-white">
+              {post.author?.username}
+            </h1>
             {user?._id === post.author._id && (
-              <Badge variant={"secondary"}>Author</Badge>
+              <Badge variant="secondary" className="text-xs">
+                Author
+              </Badge>
             )}
           </div>
         </div>
+
+        {/* Options */}
         <Dialog>
           <DialogTrigger asChild>
-            <MoreHorizontal className="cursor-pointer" />
+            <MoreHorizontal className="cursor-pointer text-gray-400" />
           </DialogTrigger>
-          <DialogContent className="flex flex-col items-center text-sm text-center">
+          <DialogContent className="bg-[#222] text-white border-gray-600">
             {post?.author?._id !== user?._id && (
               <Button
-                variant={"ghost"}
-                className={"cursor-pointer w-fit text-[#FCCF28] font-bold"}
+                variant="ghost"
+                className="text-yellow-400 hover:text-yellow-300"
               >
                 Unfollow
               </Button>
             )}
-
-            <Button variant={"ghost"} className={"cursor-pointer w-fit  "}>
+            <Button variant="ghost" className="hover:text-white">
               Add to favorites
             </Button>
-            {user && user?._id === post?.author?._id && (
-              <div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant={"ghost"}
-                      className={"cursor-pointer w-fit "}
-                    >
-                      Delete
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="text-center flex flex-col items-center">
-                    <h4 className="text-lg font-semibold mb-2">Delete post?</h4>
-                    <p className="">
-                      Are you sure you want to delete this post?
-                    </p>
-
-                    <Button
-                      onClick={deletePostHandler}
-                      variant={"destructive"}
-                      className={"cursor-pointer w-full my-2"}
-                    >
-                      Confirm
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            )}
+            <div className="flex justify-center items-center w-full">
+              {user && user?._id === post?.author?._id && (
+                <div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-300 w-full"
+                      >
+                        Delete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="text-center bg-[#222] text-white">
+                      <h4 className="text-lg font-semibold mb-2">
+                        Delete post?
+                      </h4>
+                      <p>Are you sure you want to delete this post?</p>
+                      <Button
+                        onClick={deletePostHandler}
+                        variant="destructive"
+                        className="w-full mt-3"
+                      >
+                        Confirm
+                      </Button>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Image */}
       <img
-        className="w-full  object-cover rounded-lg my-4 border border-gray-300"
+        className="w-full h-auto rounded-md my-4 border border-gray-700 object-cover"
         src={post.image}
-        alt="post_image"
+        alt="post"
       />
 
-      <div className="flex items-center justify-between my-2">
-        <div className="flex items-center gap-3">
+      {/* Interactions */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex gap-3 items-center text-gray-400">
           {liked ? (
             <FaHeart
               onClick={likeOrDislikeHandler}
-              size={"24"}
-              className="cursor-pointer text-[#FBCF28]"
+              size={20}
+              className="text-yellow-400 cursor-pointer"
             />
           ) : (
             <FaRegHeart
               onClick={likeOrDislikeHandler}
-              size={"22px"}
-              className={"cursor-pointer text-gray-600 hover:text-[#FBCF28]"}
+              size={20}
+              className="hover:text-yellow-400 cursor-pointer"
             />
           )}
-
           <MessageCircle
-            size={"22px"}
+            size={20}
             onClick={() => {
               dispatch(setSelectedPost(post));
               setOpen(true);
             }}
-            className={"cursor-pointer text-gray-600 hover:text-[#FBCF28]"}
+            className="hover:text-yellow-400 cursor-pointer"
           />
-          <Send
-            size={"22px"}
-            className={"cursor-pointer text-gray-600 hover:text-[#FBCF28]"}
-          />
+          <Send size={20} className="hover:text-yellow-400 cursor-pointer" />
         </div>
         <Bookmark
           onClick={bookmarkHandler}
-          className={"cursor-pointer text-gray-600 hover:text-[#FBCF28]"}
+          className="hover:text-yellow-400 cursor-pointer text-gray-400"
         />
       </div>
-      <span className="font-medium block mb-2">{postLike} Likes </span>
-      <p>
-        <span className="font-medium mr-2">@{post.author?.username}:</span>
+
+      {/* Likes */}
+      <span className="text-sm font-medium text-white">{postLike} likes</span>
+
+      {/* Caption */}
+      <p className="text-sm text-gray-300 mt-1">
+        <span className="font-semibold text-white">
+          @{post.author?.username}:{" "}
+        </span>
         {displayedCaption}
-        {isLongCaption && !showFullCaption && (
+        {isLongCaption && (
           <button
-            className="ml-2 text-blue-500 underline text-xs"
-            onClick={() => setShowFullCaption(true)}
+            className="ml-2 text-yellow-400 text-xs underline"
+            onClick={() => setShowFullCaption((prev) => !prev)}
           >
-            See more
-          </button>
-        )}
-        {isLongCaption && showFullCaption && (
-          <button
-            className="ml-2 text-blue-500 underline text-xs"
-            onClick={() => setShowFullCaption(false)}
-          >
-            See less
+            {showFullCaption ? "See less" : "See more"}
           </button>
         )}
       </p>
+
+      {/* View Comments */}
       {comment.length > 0 && (
-        <span
+        <p
           onClick={() => {
             dispatch(setSelectedPost(post));
             setOpen(true);
           }}
-          className="cursor-pointer"
+          className="text-sm text-gray-500 mt-1 hover:underline cursor-pointer"
         >
           View all {comment.length} comments
-        </span>
+        </p>
       )}
 
+      {/* Comment Dialog */}
       <CommentDialog open={open} setOpen={setOpen} />
-      <div className="flex items-center gap-2">
+
+      {/* Add Comment */}
+      <div className="flex items-center mt-3 gap-2">
         <input
-          type={"text"}
+          type="text"
           placeholder="Add a comment..."
           value={text}
           onChange={changeEventHandler}
-          className={"outline-none text-sm w-full my-2"}
+          className="bg-[#2A2A2A] text-white text-sm px-3 py-2 w-full rounded-md outline-none"
         />
         {text && (
           <span
             onClick={commentHandler}
-            className="text-[#FCCF28] cursor-pointer font-semibold"
+            className="text-yellow-400 font-semibold text-sm cursor-pointer"
           >
             Post
           </span>

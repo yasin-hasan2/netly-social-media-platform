@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@import url("https://fonts.googleapis.com/css2?family=Delius+Unicase:wght@400;700&display=swap");
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -117,4 +119,31 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+body {
+  font-family: "Lato", sans-serif;
+}
+
+@keyframes animate {
+  0% {
+    background-position: 0%;
+  }
+
+  100% {
+    background-position: 400%;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(transparent, #ebe30585);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(transparent, white);
 }

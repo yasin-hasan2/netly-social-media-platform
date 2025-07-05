@@ -5,33 +5,36 @@ import SuggestedUsers from "./SuggestedUsers";
 
 const RightSidebar = () => {
   const { user } = useSelector((store) => store.auth);
-  // console.log(user);
+
   return (
-    <div className="w-fit my-10 pr-32 border">
-      <div className="flex items-center gap-2">
+    <div className="hidden lg:block w-[300px] p-4 fixed right-1 top-20 rounded-xl  border border-gray-800 text-white">
+      {/* User Info */}
+      <div className="flex items-center gap-4 mb-6">
         <Link to={`/profile/${user?._id}`}>
-          <Avatar>
-            <AvatarImage
-              src={user?.profilePicture}
-              alt="post_image"
-            ></AvatarImage>
+          <Avatar className="w-12 h-12 border border-gray-600">
+            <AvatarImage src={user?.profilePicture} alt="profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </Link>
-
-        <div className="">
-          <h1 className="font-semibold text-sm">
-            {" "}
-            <Link to={`/profile/${user?._id}`}>{user?.username}</Link>{" "}
+        <div>
+          <h1 className="font-semibold text-base leading-none">
+            <Link to={`/profile/${user?._id}`} className="hover:underline">
+              {user?.username}
+            </Link>
           </h1>
-          <span className="text-gray-600 text-sm">
-            {" "}
-            {user?.bio || "Bio here ..."}{" "}
-          </span>
+          <p className="text-sm text-gray-400">
+            {user?.bio || "Bio not available"}
+          </p>
         </div>
       </div>
 
-      <SuggestedUsers />
+      {/* Suggested Users */}
+      <div>
+        <h2 className="text-sm font-semibold text-gray-400 mb-2">
+          Suggested for you
+        </h2>
+        <SuggestedUsers />
+      </div>
     </div>
   );
 };

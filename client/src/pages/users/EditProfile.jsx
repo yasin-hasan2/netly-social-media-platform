@@ -13,7 +13,6 @@ import { setAuthUser } from "@/redux/authSlice";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
-
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,9 +23,10 @@ const EditProfile = () => {
   const { user } = useSelector((store) => store.auth);
   const [input, setInput] = useState({
     profilePhoto: user?.profilePicture,
-    bio: user?.bio,
-    gender: user?.gender,
+    bio: user?.bio || "",
+    gender: user?.gender || "",
   });
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -40,7 +40,6 @@ const EditProfile = () => {
   };
 
   const EditProfileHandler = async () => {
-    // console.log(input);
     const formData = new FormData();
     formData.append("bio", input.bio);
     formData.append("gender", input.gender);
@@ -69,92 +68,103 @@ const EditProfile = () => {
         };
         dispatch(setAuthUser(updatedUserData));
         navigate(`/profile/${user?._id}`);
-        toast.success(res.data.success);
-        console.log(res.data);
+        toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.data.message);
+      toast.error(error?.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex max-w-2xl mx-auto pl-10 ">
-      <section className="flex flex-col gap-6 w-full my-8">
-        <h1 className="font-bold text-xl">Edit Profile</h1>
-        <div className="flex items-center justify-between gap-2 bg-gray-200  rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage
-                src={user?.profilePicture}
-                alt="post_image"
-              ></AvatarImage>
+    <div className="max-w-2xl w-full mx-auto mt-10 px-4">
+      <section className="bg-[#1A1A1A] border border-gray-700 rounded-xl p-6 shadow-lg backdrop-blur-sm">
+        <h1 className="text-2xl font-semibold mb-6 text-white">Edit Profile</h1>
+
+        {/* Profile photo section */}
+        <div className="flex items-center justify-between gap-4 bg-[#2A2A2A] rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={user?.profilePicture} alt="profile" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-
-            <div className="">
-              <h1 className="font-bold text-sm"> {user?.username} </h1>
-              <span className="text-gray-600 text-sm">
-                {" "}
-                {user?.bio || "Bio here ..."}{" "}
-              </span>
+            <div>
+              <h2 className="text-white font-medium text-lg">
+                {user?.username}
+              </h2>
+              <p className="text-gray-400 text-sm">
+                {user?.bio || "No bio added"}
+              </p>
             </div>
           </div>
           <input
             ref={imageRef}
             onChange={fileChangeHandler}
             type="file"
+            accept="image/*"
             className="hidden"
           />
           <Button
-            onClick={() => imageRef?.current.click()}
-            className={"bg-[#fbcf28] h-8 hover:bg-[#cfb865]"}
+            onClick={() => imageRef.current.click()}
+            className="bg-[#FBCF28] hover:bg-[#cfb865] h-8 text-black"
           >
             Change Photo
           </Button>
         </div>
-        <div>
-          <h1 className="font-bold text-xl mb-2">Bio</h1>
+
+        {/* Bio */}
+        <div className="mb-6">
+          <label className="text-white font-medium text-sm mb-1 block">
+            Bio
+          </label>
           <Textarea
             value={input.bio}
             onChange={(e) => setInput({ ...input, bio: e.target.value })}
-            name="bio"
-            className={"focus-visible:ring-transparent"}
+            placeholder="Write something about yourself..."
+            className="bg-[#2A2A2A] text-white border-gray-600 focus-visible:ring-transparent"
           />
         </div>
-        <div>
-          <h1 className="font-bold text-xl mb-2">Gender</h1>
+
+        {/* Gender */}
+        <div className="mb-6">
+          <label className="text-white font-medium text-sm mb-1 block">
+            Gender
+          </label>
           <Select
             defaultValue={input.gender}
             onValueChange={selectChangeHandler}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue />
+            <SelectTrigger className="bg-[#2A2A2A] text-white border-gray-600">
+              <SelectValue placeholder="Select gender" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#2A2A2A] text-white border-gray-700">
               <SelectGroup>
                 <SelectItem value="male">Male</SelectItem>
                 <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
+
+        {/* Submit */}
         <div className="flex justify-end">
-          {loading ? (
-            <Button className={"bg-[#fbcf28] h-8 hover:bg-[#cfb865]"}>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Please wait
-            </Button>
-          ) : (
-            <Button
-              onClick={EditProfileHandler}
-              className={"bg-[#fbcf28] h-8 hover:bg-[#cfb865]"}
-            >
-              Submit
-            </Button>
-          )}
+          <Button
+            onClick={EditProfileHandler}
+            disabled={loading}
+            className="bg-[#FBCF28] hover:bg-[#cfb865] h-10 text-black font-semibold px-6"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
         </div>
       </section>
     </div>
