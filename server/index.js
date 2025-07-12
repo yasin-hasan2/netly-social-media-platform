@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import * as Sentry from "@sentry/node";
 import connectDB from "./utils/db.js";
+// db connection
 // import userRoute from "";
 import router from "./routes/user.route.js";
 
