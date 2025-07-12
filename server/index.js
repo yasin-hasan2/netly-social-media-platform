@@ -5,8 +5,11 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import * as Sentry from "@sentry/node";
+import connectDB from "./utils/db.js";
+// import userRoute from "";
+import router from "./routes/user.route.js";
 
-dotenv.config();
+dotenv.config({});
 
 const app = express();
 
@@ -21,6 +24,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use("/api/v1/user", router);
 
 // ✅ Setup new Sentry middleware (replaces requestHandler)
 Sentry.setupExpressErrorHandler(app);
@@ -51,5 +56,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
+  connectDB();
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
